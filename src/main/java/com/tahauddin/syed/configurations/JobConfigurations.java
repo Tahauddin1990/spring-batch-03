@@ -58,9 +58,9 @@ public class JobConfigurations {
     @Bean
     public Step step()  {
         return stepBuilderFactory.get("stepOne")
-                .chunk(1)
+                .<Input, Output>chunk(1)
                 .reader(reader())
-                .processor(new PassThroughItemProcessor<>())
+        //        .processor(new PassThroughItemProcessor<>())
                 /*.writer(list -> {
                     log.info("Writing Data to Log :: {}", list);
                     log.info("Writing Done !!");
@@ -69,11 +69,11 @@ public class JobConfigurations {
                 .build();
     }
 
-    private JsonFileItemWriter<Object> writer() {
+    private JsonFileItemWriter<Output> writer() {
 
-        Resource outputResource = new FileSystemResource("classpath:files/output.json");
-        return new JsonFileItemWriterBuilder<>()
-                .jsonObjectMarshaller(new JacksonJsonObjectMarshaller<>())
+        Resource outputResource = new FileSystemResource("./src/main/resources/files/output.json");
+        return new JsonFileItemWriterBuilder<Output>()
+                .jsonObjectMarshaller(new JacksonJsonObjectMarshaller<Output>())
                 .name("itemWriter")
                 .resource(outputResource).build();
     }
