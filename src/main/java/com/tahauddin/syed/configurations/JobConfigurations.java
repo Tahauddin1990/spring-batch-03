@@ -61,19 +61,13 @@ public class JobConfigurations {
         return stepBuilderFactory.get("stepOne")
                 .<Input, Output>chunk(1)
                 .reader(reader())
-        //        .processor(new PassThroughItemProcessor<>())
-                /*.writer(list -> {
-                    log.info("Writing Data to Log :: {}", list);
-                    log.info("Writing Done !!");
-                })*/
                 .processor(procesor())
                 .writer(writer())
                 .build();
     }
 
     private ItemProcessor<Input,Output> procesor() {
-
-        return null;
+        return input -> new Output(input.getName(), "30");
     }
 
     private JsonFileItemWriter<Output> writer() {
