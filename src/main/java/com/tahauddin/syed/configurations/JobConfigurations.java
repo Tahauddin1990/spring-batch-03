@@ -1,6 +1,7 @@
 package com.tahauddin.syed.configurations;
 
 import com.tahauddin.syed.dto.Input;
+import com.tahauddin.syed.dto.Output;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -11,14 +12,20 @@ import org.springframework.batch.core.configuration.annotation.StepBuilderFactor
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.core.step.tasklet.TaskletStep;
+import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.json.JacksonJsonObjectMarshaller;
 import org.springframework.batch.item.json.JacksonJsonObjectReader;
+import org.springframework.batch.item.json.JsonFileItemWriter;
 import org.springframework.batch.item.json.JsonItemReader;
+import org.springframework.batch.item.json.builder.JsonFileItemWriterBuilder;
 import org.springframework.batch.item.json.builder.JsonItemReaderBuilder;
+import org.springframework.batch.item.support.PassThroughItemProcessor;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.util.ResourceUtils;
 
 import java.io.File;
@@ -52,12 +59,24 @@ public class JobConfigurations {
     @Bean
     public Step step()  {
         return stepBuilderFactory.get("stepOne")
-                .chunk(1)
+                .<Input, Output>chunk(1)
                 .reader(reader())
-                .writer(list -> {
-                    log.info("Writing Data to Log :: {}", list);
-                    log.info("Writing Done !!");
-                }).build();
+                .processor(procesor())
+                .writer(writer())
+                .build();
+    }
+
+    private ItemProcessor<Input,Output> procesor() {
+        return input -> new Output(input.getName(), "30");
+    }
+
+    private JsonFileItemWriter<Output> writer() {
+
+        Resource outputResource = new FileSystemResource("./src/main/resources/files/output.json");
+        return new JsonFileItemWriterBuilder<Output>()
+                .jsonObjectMarshaller(new JacksonJsonObjectMarshaller<Output>())
+                .name("itemWriter")
+                .resource(outputResource).build();
     }
 
     @Bean
@@ -68,7 +87,6 @@ public class JobConfigurations {
         } catch (FileNotFoundException exception){
             log.error("File Not Found");
         }
-
         return new JsonItemReaderBuilder<Input>()
                 .jsonObjectReader(new JacksonJsonObjectReader<>(Input.class))
                 .resource(new FileSystemResource(file))
