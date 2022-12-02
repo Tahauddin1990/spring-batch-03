@@ -12,6 +12,7 @@ import org.springframework.batch.core.configuration.annotation.StepBuilderFactor
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.core.step.tasklet.TaskletStep;
+import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.json.JacksonJsonObjectMarshaller;
 import org.springframework.batch.item.json.JacksonJsonObjectReader;
@@ -65,8 +66,14 @@ public class JobConfigurations {
                     log.info("Writing Data to Log :: {}", list);
                     log.info("Writing Done !!");
                 })*/
+                .processor(procesor())
                 .writer(writer())
                 .build();
+    }
+
+    private ItemProcessor<Input,Output> procesor() {
+
+        return null;
     }
 
     private JsonFileItemWriter<Output> writer() {
